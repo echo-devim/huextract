@@ -1,0 +1,7 @@
+[package]
+name = "huextract"
+version = "0.1.0"
+authors = ["echo-devim <devim@outlook.it>"]
+
+[dependencies]
+num_cpus = "1.7.0"
