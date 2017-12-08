@@ -32,21 +32,25 @@ Thanks to: https://github.com/marcominetti/split_updata.pl
 */
 #[derive(Default)]
 struct BlockHeader {
-    file_size: [u8; 4],
-    file_type: [u8; 16]
+	offset: u64,
+	header_length: u64,
+    file_size: usize,
+    file_name: String
 }
 
-fn thread_extract(mut file: File, offset: u64, filename: &String, filesize: usize) {
+
+
+fn thread_extract(mut file: File, bh: &BlockHeader) {
     //Skip some uninteresting header entries
-    let mut out_file = File::create(filename).unwrap();
+    let mut out_file = File::create(&bh.file_name).unwrap();
     let limit = 100*1024*1024; //100MB, decrease this number to save memory
     let mut size: usize = limit; //read using 100MB chunks
-    if (filesize < limit) {
-        size = filesize;
+    if (bh.file_size < limit) {
+        size = bh.file_size;
     }
-    file.seek(SeekFrom::Start(offset + 100)); //Skip the header block
+    file.seek(SeekFrom::Start(bh.offset + 98 + (bh.header_length - 98))); //Skip the header block
     let mut reader = BufReader::with_capacity(size, file);
-    let mut missing = filesize;
+    let mut missing = bh.file_size;
     loop {
         let length = {
             let buffer = reader.fill_buf().unwrap();
@@ -61,7 +65,7 @@ fn thread_extract(mut file: File, offset: u64, filename: &String, filesize: usiz
         };
         reader.consume(length);
     }
-    println!("{} extracted!", filename);
+    println!("{} extracted!", bh.file_name);
 }
 
 fn remove_null_bytes(buffer: [u8; 16]) -> Vec<u8> {
@@ -96,22 +100,29 @@ fn extract(update_file: String) {
         if (buffer == block_signature) {
             println!("Found file block at 0x{:x}", offset);
             //Header analysis
-            //Skip some uninteresting header entries
-            uf.seek(SeekFrom::Start(offset + 24));
+            //Skip signature
+            let mut temp_buf = [0u8; 4];
+            let mut temp_buf2 = [0u8; 16];
+            uf.seek(SeekFrom::Start(offset + 4));
             let mut bh = BlockHeader {..Default::default()};
-            uf.read_exact(&mut bh.file_size);
+            bh.offset = offset;
+            uf.read_exact(&mut temp_buf);
+            bh.header_length = unsafe {std::mem::transmute::<[u8; 4], u32>(temp_buf) }.to_le() as u64;
+            uf.seek(SeekFrom::Current(16));
+            uf.read_exact(&mut temp_buf);
+            let filesize = unsafe {std::mem::transmute::<[u8; 4], u32>(temp_buf) }.to_le() as u64;
+            bh.file_size = filesize as usize;
             uf.seek(SeekFrom::Current(32));
-            uf.read_exact(&mut bh.file_type);
-            let filename = match String::from_utf8(remove_null_bytes(bh.file_type)) {
+            uf.read_exact(&mut temp_buf2);
+            bh.file_name = match String::from_utf8(remove_null_bytes(temp_buf2)) {
                 Ok(filename) => filename + ".img",
                 Err(_) => { println!("Invalid file at 0x{:x}, ignoring it..", offset); return}
             };
-            let filesize = unsafe {std::mem::transmute::<[u8; 4], u32>(bh.file_size) }.to_le() as u64;
-            println!("Extracting {} ({} bytes)", filename, filesize);
+            println!("Extracting {} ({} bytes)", bh.file_name, bh.file_size);
             //Start a new thread to do the job
             //Each thread should work on a different file handler for safety reasons
             let uf_copy = File::open(&update_file).expect("Update file not found");
-            let handle = thread::spawn(move || thread_extract(uf_copy, offset, &filename, filesize as usize));
+            let handle = thread::spawn(move || thread_extract(uf_copy, &bh));
             threads.push(handle);
             //wait if there are too many running threads
             if (threads.len() >= cpus - 1) {
