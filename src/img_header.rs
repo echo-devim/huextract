@@ -20,6 +20,8 @@
 use crate::local_error::Error;
 use crate::utils::remove_null_bytes;
 
+mod display;
+
 #[derive(Default, Clone)]
 pub struct ImgHeader {
     pub header_len: [u8; 4],
@@ -115,57 +117,57 @@ impl ImgHeader {
     }
 }
 
-impl std::fmt::Display for ImgHeader {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let total_size = self.filesize() + self.headersize();
-        write!(
-            f,
-            "\
- - header_len: {:x?}
- - unknown_field: {:x?}
- - hardware_id: {:x?}
- - file_sequence: {:x?}
- - file_size: {:x?}
- - file_date: {:x?}
- - file_time: {:x?}
- - file_type: {:x?}
- - blank_field1: {:x?}
- - header_checksum: {:x?}
- - blocksize: {:x?}
- - blank_field2: {:x?}
- - file_checksum_size: {}
- => filename: {},
- => file size: {} bytes
- => total header len: {} bytes
- => file checksum len: {} bytes
- => total len: {} bytes
- => calculated offset: {} bytes,
- => blocksize: {} bytes
- => total/bs: {}",
-            self.header_len,
-            self.unknown_field,
-            self.hardware_id,
-            self.file_sequence,
-            self.file_size,
-            self.file_date,
-            self.file_time,
-            self.file_type,
-            self.blank_field1,
-            self.header_checksum,
-            self.blocksize,
-            self.blank_field2,
-            self.file_checksum_size,
-            self.filename_lossy(),
-            self.filesize(),
-            self.headersize(),
-            self.file_checksum_size,
-            total_size,
-            self.offset(),
-            self.blocksize(),
-            total_size as f64 / self.blocksize() as f64
-        )
-    }
-}
+//impl std::fmt::Display for ImgHeader {
+//    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//        let total_size = self.filesize() + self.headersize();
+//
+//            f,
+//            "\
+// - header_len: {:x?}
+// - unknown_field: {:x?}
+// - hardware_id: {:x?}
+// - file_sequence: {:x?}
+// - file_size: {:x?}
+// - file_date: {:x?}
+// - file_time: {:x?}
+// - file_type: {:x?}
+// - blank_field1: {:x?}
+// - header_checksum: {:x?}
+// - blocksize: {:x?}
+// - blank_field2: {:x?}
+// - file_checksum_size: {}
+// => filename: {},
+// => file size: {} bytes
+// => total header len: {} bytes
+// => file checksum len: {} bytes
+// => total len: {} bytes
+// => calculated offset: {} bytes,
+// => blocksize: {} bytes
+// => total/bs: {}",
+//            self.header_len,
+//            self.unknown_field,
+//            self.hardware_id,
+//            self.file_sequence,
+//            self.file_size,
+//            self.file_date,
+//            self.file_time,
+//            self.file_type,
+//            self.blank_field1,
+//            self.header_checksum,
+//            self.blocksize,
+//            self.blank_field2,
+//            self.file_checksum_size,
+//            self.filename_lossy(),
+//            self.filesize(),
+//            self.headersize(),
+//            self.file_checksum_size,
+//            total_size,
+//            self.offset(),
+//            self.blocksize(),
+//            total_size as f64 / self.blocksize() as f64
+//        )
+//    }
+//}
 
 #[cfg(test)]
 mod tests {
