@@ -93,14 +93,20 @@ impl From<[u8; 16]> for ArrayValue {
 
 impl std::fmt::Display for ArrayValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let values_per_line = match self.0.len() {
+            0..=8 => 2,
+            _ => 4,
+        };
         let mut display = String::new();
         for (i, val) in self.0.iter().enumerate() {
             if i == 0 {
                 display.push_str(format!("0x{:02x}", val).as_str());
+            } else if i % values_per_line == 0 {
+                display.push_str(format!("\n0x{:02x}", val).as_str());
             } else {
-                display.push_str(format!(", 0x{:02x}", val).as_str());
+                display.push_str(format!(" 0x{:02x}", val).as_str());
             }
         }
-        write!(f, "[ {} ]", display)
+        write!(f, "{}", display)
     }
 }
