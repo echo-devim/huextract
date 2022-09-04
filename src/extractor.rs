@@ -45,11 +45,11 @@ impl Extractor {
             input.parse()?;
 
             if self.show_content {
-                eprintln!("{input}");
+                println!("{input}");
             } else if self.show_headers {
-                eprintln!("{}", input.full_table());
+                println!("{}", input.full_table());
             } else if self.dump_headers {
-                eprintln!("{}", input.export_csv());
+                println!("{}", input.export_csv());
             } else {
                 input.extract()?
             }
