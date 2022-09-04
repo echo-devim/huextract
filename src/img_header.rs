@@ -20,7 +20,7 @@
 use crate::local_error::Error;
 use crate::utils::remove_null_bytes;
 
-mod display;
+pub mod display;
 
 #[derive(Default, Clone)]
 pub struct ImgHeader {
