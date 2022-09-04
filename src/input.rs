@@ -67,39 +67,27 @@ impl Input {
     ///
     /// Returns a Vec<Img>.
     pub fn parse(&mut self) -> Result<(), Error> {
-        eprintln!("DBG: Input::parse() setup");
         let end = self.data.seek(SeekFrom::End(0))?;
         self.data.seek(SeekFrom::Start(92))?;
         let mut offset = self.data.stream_position()?;
-        let mut padding = 0;
-        eprintln!("DBG: Input::parse() setup done");
         while (offset + MIN_DATA_LEN as u64) < end {
-            eprintln!("DBG: Input::parse() using offset: {}", offset);
             let mut buf = [0; MIN_DATA_LEN as usize];
             self.data.read_exact(&mut buf)?;
-            eprintln!("buffer: {:x?}", &buf.as_slice()[0..=3]);
             match ImgHeader::try_from(buf.as_slice()) {
                 Ok(header) => {
-                    eprintln!("Padding: {padding}");
-                    eprintln!("found img:\nHeader:\n{}\nOffset: {}", header, offset);
                     self.img_parts.push(Img::new(header.to_owned(), offset));
                     offset += header.offset();
-                    padding = 0;
                 }
-                Err(e) => {
-                    eprintln!("img not found: {e}");
-                    padding += 1;
+                Err(_) => {
                     offset += 1;
                 }
             }
             self.data.seek(SeekFrom::Start(offset))?;
         }
         let mut remaining: i128 = (end - offset) as i128;
-        eprintln!("Remaining bytes: {}", remaining);
         while remaining > 0 {
             let mut byte = [0; 1];
             self.data.read_exact(&mut byte)?;
-            eprintln!("byte @{offset}: {:x?}", byte);
             offset += 1;
             remaining -= 1;
             self.data.seek(SeekFrom::Start(offset))?;
@@ -109,6 +97,7 @@ impl Input {
 
     /// Extract the content of the img files to disk
     pub fn extract(&mut self) -> Result<(), Error> {
+        for part in &self.img_parts {}
         unimplemented!()
     }
 }
