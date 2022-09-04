@@ -24,6 +24,9 @@ pub struct Extractor {
     /// Show header summary instead of extracting.
     #[clap(short = 'H', long)]
     show_headers: bool,
+    /// Dump header table into a parseable file.
+    #[clap(short, long)]
+    dump_headers: bool,
 }
 
 impl Extractor {
@@ -45,6 +48,8 @@ impl Extractor {
                 eprintln!("{input}");
             } else if self.show_headers {
                 eprintln!("{}", input.full_table());
+            } else if self.dump_headers {
+                eprintln!("{}", input.export_csv());
             } else {
                 input.extract()?
             }
