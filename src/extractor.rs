@@ -21,6 +21,9 @@ pub struct Extractor {
     /// Show content of file instead of extracting.
     #[clap(short, long)]
     show_content: bool,
+    /// Show header summary instead of extracting.
+    #[clap(short = 'H', long)]
+    show_headers: bool,
 }
 
 impl Extractor {
@@ -31,21 +34,17 @@ impl Extractor {
                 self.input.display()
             )))
         } else {
-            eprintln!("Using file {}", self.input.display());
             let mut input = Input::try_from(self.input.as_path())?;
 
-            eprintln!("DBG: validating input...");
             input.validate()?;
-            eprintln!("DBG: input is valid");
 
             // Parse the input to get img headers
-            eprintln!("DBG: parsing input...");
-            eprintln!("Input size: {}", input.size);
             input.parse()?;
-            eprintln!("DBG: input parsed");
 
             if self.show_content {
                 eprintln!("{input}");
+            } else if self.show_headers {
+                eprintln!("{}", input.full_table());
             } else {
                 input.extract()?
             }
