@@ -19,13 +19,13 @@ pub struct Extractor {
     #[clap(value_parser, default_value_os_t = PathBuf::from("UPDATE.APP"))]
     input: PathBuf,
     /// Show content of file instead of extracting.
-    #[clap(short, long)]
+    #[clap(short = 'C', long, group = "action")]
     show_content: bool,
     /// Show header summary instead of extracting.
-    #[clap(short = 'H', long)]
+    #[clap(short = 'H', long, group = "action")]
     show_headers: bool,
     /// Dump header table into a parseable file.
-    #[clap(short, long)]
+    #[clap(short, long, group = "action")]
     dump_headers: bool,
 }
 
