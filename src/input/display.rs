@@ -1,7 +1,7 @@
 //! This module defines the implementation of the Display trait for Input
 //!
 use super::Input;
-use tabled::{object::Columns, Modify, Table, Tabled, Width};
+use tabled::{object::Columns, Modify, Style, Table, Tabled, Width};
 
 #[derive(Tabled)]
 struct TableEntry {
@@ -40,6 +40,17 @@ impl std::fmt::Display for Input {
 }
 
 impl Input {
+    pub fn export_csv(&self) -> String {
+        let mut entries = Vec::new();
+
+        for part in &self.img_parts {
+            entries.push(crate::img_header::display::TableEntry::from(&part.header));
+        }
+
+        let table = Table::new(entries).with(Style::blank().vertical(';'));
+        format!("{table}")
+    }
+
     pub fn full_table(&self) -> String {
         let mut entries = Vec::new();
 
