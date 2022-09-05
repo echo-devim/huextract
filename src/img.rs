@@ -3,6 +3,7 @@
 
 use crate::img_header::ImgHeader;
 
+#[derive(Clone)]
 pub struct Img {
     pub header: ImgHeader,
     pub offset: u64,

@@ -12,7 +12,7 @@ use std::io::{BufReader, SeekFrom};
 use std::path::Path;
 
 use crate::img::Img;
-use crate::img_header::{ImgHeader, MIN_DATA_LEN};
+use crate::img_header::{ImgHeader, MIN_DATA_LEN, MIN_HEADER_LEN};
 use crate::local_error::Error;
 
 mod display;
@@ -101,7 +101,66 @@ impl Input {
 
     /// Extract the content of the img files to disk
     pub fn extract(&mut self) -> Result<(), Error> {
-        for part in &self.img_parts {}
         unimplemented!()
+    }
+
+    /// Extract the checksum file to the disk
+    pub fn extract_checksum(&mut self) -> Result<(), Error> {
+        for part in self.img_parts.clone() {
+            let filename = format!("{}.sum", part.header.filename()?);
+            let offset = part.offset + MIN_HEADER_LEN as u64;
+            let size = (part.header.headersize() - MIN_HEADER_LEN as u64) as usize;
+            self.extract_helper(filename, offset, size)?;
+        }
+        Ok(())
+    }
+
+    /// Extract the content of the img files to disk
+    pub fn extract_img(&mut self) -> Result<(), Error> {
+        for part in self.img_parts.clone() {
+            let filename = format!("{}.img", part.header.filename()?);
+            let offset = part.offset + part.header.headersize();
+            let size = part.header.filesize() as usize;
+            self.extract_helper(filename, offset, size)?;
+        }
+        Ok(())
+    }
+
+    /// Helper extract function
+    fn extract_helper(&mut self, filename: String, offset: u64, size: usize) -> Result<(), Error> {
+        println!("Starting extraction of {filename}");
+
+        if File::open(&filename).is_ok() {
+            return Err(Error::new(format!("File {} already exists", filename)));
+        }
+
+        let mut output_file = File::create(filename)?;
+        const CAPACITY: usize = 100 * 1024 * 1024; // Set temp buffer capacity to 100MB
+        let mut buffer = vec![0; CAPACITY]; // allocate an empty buffer until the specified capacity
+        let mut bytes_copied = 0;
+        //eprintln!("seeking the right offset");
+        self.data.seek(SeekFrom::Start(offset))?;
+        //let mut read_buffer = self.data.take(part.header.filesize());
+        // Buffered copy to the output file
+        while bytes_copied < size {
+            let remaining_bytes = size - bytes_copied;
+            //eprintln!("remaining_bytes = {remaining_bytes}");
+            // shrink buffer to the right size
+            buffer.truncate(std::cmp::min(CAPACITY, remaining_bytes));
+            //eprintln!("buffer len: {}", buffer.len());
+            //eprintln!("buffer capacity: {}", buffer.capacity());
+            //eprintln!("filling buffer...");
+            let bytes_read = self.data.read(&mut buffer)?;
+            //eprintln!("read {bytes_read} bytes");
+            if bytes_read == 0 {
+                return Err(Error::new("Read 0 bytes".into()));
+            }
+            output_file.write_all(&buffer)?;
+            //eprintln!("Done copying");
+            bytes_copied += bytes_read;
+            //eprintln!("bytes_copied = {bytes_copied}");
+        }
+        println!("Done");
+        Ok(())
     }
 }
