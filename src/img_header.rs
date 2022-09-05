@@ -110,11 +110,6 @@ impl ImgHeader {
     pub fn blocksize(&self) -> u64 {
         u16::from_le_bytes(self.blocksize) as u64
     }
-
-    /// Returns the size of the padding.
-    pub fn paddingsize(&self) -> u64 {
-        unimplemented!()
-    }
 }
 
 //impl std::fmt::Display for ImgHeader {
