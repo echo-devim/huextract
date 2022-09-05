@@ -13,10 +13,14 @@ struct TableEntry {
     filesize: u64,
     #[tabled(rename = "Header size (bytes)")]
     headersize: u64,
+    #[tabled(rename = "Padding size (bytes)")]
+    paddingsize: u64,
     #[tabled(rename = "Total size (bytes)")]
     total: u64,
     #[tabled(rename = "Offset (bytes)")]
     offset: u64,
+    #[tabled(rename = "Total + offset (bytes)")]
+    sum: u64,
 }
 
 impl std::fmt::Display for Input {
@@ -29,8 +33,10 @@ impl std::fmt::Display for Input {
                 filename: part.header.filename_lossy(),
                 filesize: part.header.filesize(),
                 headersize: part.header.headersize(),
-                total: part.header.filesize() + part.header.headersize(),
+                paddingsize: part.padding,
+                total: part.header.offset() + part.padding,
                 offset: part.offset,
+                sum: part.offset + part.header.offset() + part.padding,
             });
         }
         let table = Table::new(entries);
