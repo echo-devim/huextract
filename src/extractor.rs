@@ -27,6 +27,12 @@ pub struct Extractor {
     /// Dump header table into a parseable file.
     #[clap(short, long, group = "action")]
     dump_headers: bool,
+    /// Extract the img files
+    #[clap(short, long, group = "action")]
+    extract_img: bool,
+    /// Extract the checksum of the img files
+    #[clap(short = 'S', long, group = "action")]
+    extract_checksum: bool,
 }
 
 impl Extractor {
@@ -50,6 +56,10 @@ impl Extractor {
                 println!("{}", input.full_table());
             } else if self.dump_headers {
                 println!("{}", input.export_csv());
+            } else if self.extract_img {
+                input.extract_img()?
+            } else if self.extract_checksum {
+                input.extract_checksum()?
             } else {
                 input.extract()?
             }
