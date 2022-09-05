@@ -70,15 +70,19 @@ impl Input {
         let end = self.data.seek(SeekFrom::End(0))?;
         self.data.seek(SeekFrom::Start(92))?;
         let mut offset = self.data.stream_position()?;
+        let mut padding = 0;
         while (offset + MIN_DATA_LEN as u64) < end {
             let mut buf = [0; MIN_DATA_LEN as usize];
             self.data.read_exact(&mut buf)?;
             match ImgHeader::try_from(buf.as_slice()) {
                 Ok(header) => {
-                    self.img_parts.push(Img::new(header.to_owned(), offset));
+                    self.img_parts
+                        .push(Img::new(header.to_owned(), offset, padding));
                     offset += header.offset();
+                    padding = 0;
                 }
                 Err(_) => {
+                    padding += 1;
                     offset += 1;
                 }
             }
