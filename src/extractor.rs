@@ -21,7 +21,7 @@ pub struct Extractor {
     /// The name of the file to extract the img files from.
     ///
     /// Defaults to UPDATE.APP.
-    #[clap(value_parser, default_value_os_t = PathBuf::from("UPDATE.APP"))]
+    #[clap(short, long, value_parser, default_value_os_t = PathBuf::from("UPDATE.APP"))]
     input: PathBuf,
     /*    /// Show content of file instead of extracting.
     #[clap(short = 'C', long, group = "action")]
