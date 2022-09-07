@@ -37,6 +37,7 @@ pub struct Extractor {
 
 impl Extractor {
     pub fn run(self) -> Result<(), Error> {
+        println!("Using input file {}", self.input.display());
         if !self.input.exists() {
             Err(Error::from(format!(
                 "File {} does not exist",
