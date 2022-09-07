@@ -4,10 +4,9 @@
 //! (see
 //! https://github.com/worstenbrood/HuaweiUpdateLibrary/blob/master/HuaweiUpdateLibrary/Algorithms/UpdateCrc16.cs)
 //!
-use std::io::{BufRead, Seek, SeekFrom};
-
-trait SeekRead: Seek + BufRead {}
-impl<T: Seek + BufRead> SeekRead for T {}
+use std::fs::File;
+use std::io::prelude::*;
+use std::io::{BufReader, SeekFrom};
 
 pub struct Crc {
     table: [u16; 256],
@@ -98,7 +97,7 @@ impl Crc {
 
     pub fn compute_file_checksum(
         &mut self,
-        data: &mut dyn SeekRead,
+        data: &mut BufReader<File>,
     ) -> Result<Vec<u8>, std::io::Error> {
         let mut checksum = Vec::new();
         let mut bytes_read = 0;
