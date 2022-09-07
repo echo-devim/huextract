@@ -11,7 +11,9 @@ use std::io::prelude::*;
 use std::io::{BufReader, SeekFrom};
 use std::path::Path;
 
+use crate::crc::Crc;
 use crate::img::Img;
+use crate::img_header;
 use crate::img_header::{ImgHeader, MIN_DATA_LEN, MIN_HEADER_LEN};
 use crate::local_error::Error;
 
@@ -110,7 +112,7 @@ impl Input {
             let filename = format!("{}.sum", part.header.filename()?);
             let offset = part.offset + MIN_HEADER_LEN as u64;
             let size = (part.header.headersize() - MIN_HEADER_LEN as u64) as usize;
-            self.extract_helper(filename, offset, size)?;
+            self.write_to_disk(filename.as_str(), offset, size)?;
         }
         Ok(())
     }
@@ -121,20 +123,43 @@ impl Input {
             let filename = format!("{}.img", part.header.filename()?);
             let offset = part.offset + part.header.headersize();
             let size = part.header.filesize() as usize;
-            self.extract_helper(filename, offset, size)?;
+            print!("Extracting {filename}... ");
+            self.write_to_disk(&filename, offset, size)?;
+            print!("Done");
+
+            // Verify file checksum
+            let mut checksum = Vec::new();
+            self.write_to(
+                &mut checksum,
+                part.offset + img_header::FILE_CHECKSUM_OFFSET,
+                part.header.filechecksumsize(),
+            )?;
+            let mut img = BufReader::new(File::open(&filename)?);
+            print!("... Verifying checksum... ");
+            if checksum
+                == Crc::new(part.header.blocksize() as usize).compute_file_checksum(&mut img)?
+            {
+                println!("OK");
+            } else {
+                println!("Error");
+            }
         }
         Ok(())
     }
 
-    /// Helper extract function
-    fn extract_helper(&mut self, filename: String, offset: u64, size: usize) -> Result<(), Error> {
-        println!("Starting extraction of {filename}");
-
+    /// Helper function: writes given data to disk
+    fn write_to_disk(&mut self, filename: &str, offset: u64, size: usize) -> Result<(), Error> {
         if File::open(&filename).is_ok() {
             return Err(Error::new(format!("File {} already exists", filename)));
         }
 
         let mut output_file = File::create(filename)?;
+        self.write_to(&mut output_file, offset, size)?;
+        Ok(())
+    }
+
+    /// Helper function: writes given data to a writer
+    fn write_to(&mut self, w: &mut dyn Write, offset: u64, size: usize) -> Result<(), Error> {
         const CAPACITY: usize = 100 * 1024 * 1024; // Set temp buffer capacity to 100MB
         let mut buffer = vec![0; CAPACITY]; // allocate an empty buffer until the specified capacity
         let mut bytes_copied = 0;
@@ -155,12 +180,11 @@ impl Input {
             if bytes_read == 0 {
                 return Err(Error::new("Read 0 bytes".into()));
             }
-            output_file.write_all(&buffer)?;
+            w.write_all(&buffer)?;
             //eprintln!("Done copying");
             bytes_copied += bytes_read;
             //eprintln!("bytes_copied = {bytes_copied}");
         }
-        println!("Done");
         Ok(())
     }
 }
