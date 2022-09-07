@@ -1,4 +1,6 @@
-use clap::Parser;
+use std::process::ExitCode;
+
+use clap::{CommandFactory, Parser};
 use extractor::Extractor;
 use local_error::Error;
 
@@ -11,8 +13,14 @@ mod local_error;
 mod tabled_types;
 mod utils;
 
-fn main() -> Result<(), Error> {
+fn main() -> ExitCode {
     let extractor = Extractor::parse();
-
-    extractor.run()
+    if let Err(e) = extractor.run() {
+        println!("{e}\n");
+        // print help message on error, this shouldn't fail
+        Extractor::command().print_help().unwrap();
+        ExitCode::FAILURE
+    } else {
+        ExitCode::SUCCESS
+    }
 }
