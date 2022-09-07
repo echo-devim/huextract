@@ -43,6 +43,7 @@ pub struct ImgHeader {
 const MAGIC_NUMBER: [u8; 4] = [0x55, 0xAA, 0x5A, 0xA5];
 pub const MIN_DATA_LEN: usize = 102; // 98 bytes for the header + 4 bytes for the size of the data/file_checksum
 pub const MIN_HEADER_LEN: u32 = 98;
+pub const FILE_CHECKSUM_OFFSET: u64 = 98;
 
 impl std::convert::TryFrom<&[u8]> for ImgHeader {
     type Error = String;
@@ -109,6 +110,11 @@ impl ImgHeader {
     /// Returns the blocksize
     pub fn blocksize(&self) -> u64 {
         u16::from_le_bytes(self.blocksize) as u64
+    }
+
+    /// Returns the size of the file checksum field
+    pub fn filechecksumsize(&self) -> usize {
+        self.file_checksum_size as usize
     }
 }
 
