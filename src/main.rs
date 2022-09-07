@@ -18,7 +18,7 @@ fn main() -> ExitCode {
     if let Err(e) = extractor.run() {
         println!("{e}\n");
         // print help message on error, this shouldn't fail
-        Extractor::command().print_help().unwrap();
+        Extractor::command().print_long_help().unwrap();
         ExitCode::FAILURE
     } else {
         ExitCode::SUCCESS
