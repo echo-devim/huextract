@@ -118,30 +118,32 @@ impl Input {
     }
 
     /// Extract the content of the img files to disk
-    pub fn extract_img(&mut self) -> Result<(), Error> {
+    pub fn extract_img(&mut self, no_checksum_verification: bool) -> Result<(), Error> {
         for part in self.img_parts.clone() {
             let filename = format!("{}.img", part.header.filename()?);
             let offset = part.offset + part.header.headersize();
             let size = part.header.filesize() as usize;
             print!("Extracting {filename}... ");
             self.write_to_disk(&filename, offset, size)?;
-            print!("Done");
 
-            // Verify file checksum
-            let mut checksum = Vec::new();
-            self.write_to(
-                &mut checksum,
-                part.offset + img_header::FILE_CHECKSUM_OFFSET,
-                part.header.filechecksumsize(),
-            )?;
-            let mut img = BufReader::new(File::open(&filename)?);
-            print!("... Verifying checksum... ");
-            if checksum
-                == Crc::new(part.header.blocksize() as usize).compute_file_checksum(&mut img)?
-            {
-                println!("OK");
+            if no_checksum_verification {
+                println!("Done");
             } else {
-                println!("Error");
+                // Verify file checksum
+                let mut checksum = Vec::new();
+                self.write_to(
+                    &mut checksum,
+                    part.offset + img_header::FILE_CHECKSUM_OFFSET,
+                    part.header.filechecksumsize(),
+                )?;
+                let mut img = BufReader::new(File::open(&filename)?);
+                if checksum
+                    == Crc::new(part.header.blocksize() as usize).compute_file_checksum(&mut img)?
+                {
+                    println!("Checksum OK");
+                } else {
+                    println!("Checksum error");
+                }
             }
         }
         Ok(())
