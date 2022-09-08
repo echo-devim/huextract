@@ -67,3 +67,55 @@ impl std::fmt::Display for ImgHeader {
         write!(f, "{}", table)
     }
 }
+
+#[derive(Tabled)]
+pub struct CsvEntry {
+    #[tabled(rename = "Header size (bytes)")]
+    header_len: u32,
+    #[tabled(rename = "Unknown field")]
+    unknown_field: u32,
+    #[tabled(rename = "Hardware ID")]
+    hardware_id: u64,
+    #[tabled(rename = "File sequence")]
+    file_sequence: u32,
+    #[tabled(rename = "File size (bytes)")]
+    file_size: u32,
+    #[tabled(rename = "File date")]
+    file_date: String,
+    #[tabled(rename = "File time")]
+    file_time: String,
+    #[tabled(rename = "File name")]
+    file_type: String,
+    // #[tabled(rename = "Blank field (1)")]
+    // blank_field1: u128,
+    #[tabled(rename = "Header checksum")]
+    header_checksum: u16,
+    #[tabled(rename = "Block size (bytes)")]
+    blocksize: u16,
+    #[tabled(rename = "Blank field (2)")]
+    blank_field2: u16,
+    #[tabled(rename = "File checksum size (bytes)")]
+    file_checksum_size: u32,
+}
+
+impl From<&ImgHeader> for CsvEntry {
+    fn from(header: &ImgHeader) -> Self {
+        Self {
+            header_len: u32::from_le_bytes(header.header_len),
+            unknown_field: u32::from_le_bytes(header.unknown_field),
+            hardware_id: u64::from_le_bytes(header.hardware_id),
+            file_sequence: u32::from_le_bytes(header.file_sequence),
+            file_size: u32::from_le_bytes(header.file_size),
+            file_date: String::from_utf8_lossy(&remove_null_bytes(header.file_date.as_slice()))
+                .to_string(),
+            file_time: String::from_utf8_lossy(&remove_null_bytes(header.file_time.as_slice()))
+                .to_string(),
+            file_type: header.filename_lossy(),
+            // blank_field1: u128::from_le_bytes(header.blank_field1),
+            header_checksum: u16::from_le_bytes(header.header_checksum),
+            blocksize: u16::from_le_bytes(header.blocksize),
+            blank_field2: u16::from_le_bytes(header.blank_field2),
+            file_checksum_size: header.file_checksum_size,
+        }
+    }
+}

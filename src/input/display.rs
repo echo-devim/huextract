@@ -47,7 +47,7 @@ impl Input {
         let mut entries = Vec::new();
 
         for part in &self.img_parts {
-            entries.push(crate::img_header::display::TableEntry::from(&part.header));
+            entries.push(crate::img_header::display::CsvEntry::from(&part.header));
         }
 
         let table = Table::new(entries).with(Style::blank().vertical(';'));
