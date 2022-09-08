@@ -99,10 +99,9 @@ dependencies = [
 
 [[package]]
 name = "huextract"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "clap",
- "num_cpus",
  "tabled",
 ]
 
@@ -121,15 +120,6 @@ name = "libc"
 version = "0.2.132"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8371e4e5341c3a96db127eb2465ac681ced4c433e01dd0e938adbef26ba93ba5"
-
-[[package]]
-name = "num_cpus"
-version = "1.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "514f0d73e64be53ff320680ca671b64fe3fb91da01e1ae2ddc99eb51d453b20d"
-dependencies = [
- "libc",
-]
 
 [[package]]
 name = "once_cell"
