@@ -1,5 +1,9 @@
 //! This module contains the layout of a packed image file header
 //!
+//! Adapted from [https://github.com/JoeyJiao/split_updata.pl].
+//! According to further analysis, the file name is coded with 32 bytes, and not
+//! 16 bytes followed by 16 null bytes.
+//!
 //! Each file starts with a magic number: 55AA 5AA5, followed by
 //! - 4 bytes for Header Length
 //! - 4 bytes for Unknown1
@@ -8,8 +12,7 @@
 //! - 4 bytes for File Size
 //! - 16 bytes for File Date
 //! - 16 bytes for File Time
-//! - 16 bytes for File Type, containts the file name as utf-8
-//! - 16 bytes for Blank1
+//! - 32 bytes for File Type, containts the file name as utf-8
 //! - 2 bytes for Header Checksum (Sum & 0xFFFF? or some kind of CRC16?)
 //! - 2 bytes for BlockSize
 //! - 2 bytes for Blank2
@@ -31,8 +34,8 @@ pub struct ImgHeader {
     pub file_size: [u8; 4],
     pub file_date: [u8; 16],
     pub file_time: [u8; 16],
-    pub file_type: [u8; 16],
-    pub blank_field1: [u8; 16],
+    pub file_type: [u8; 32],
+    //    pub blank_field1: [u8; 16],
     pub header_checksum: [u8; 2],
     pub blocksize: [u8; 2],
     pub blank_field2: [u8; 2],
@@ -64,8 +67,9 @@ impl std::convert::TryFrom<&[u8]> for ImgHeader {
             file_size: data[24..=27].try_into().map_err(|e| format!("{}", e))?,
             file_date: data[28..=43].try_into().map_err(|e| format!("{}", e))?,
             file_time: data[44..=59].try_into().map_err(|e| format!("{}", e))?,
-            file_type: data[60..=75].try_into().map_err(|e| format!("{}", e))?,
-            blank_field1: data[76..=91].try_into().map_err(|e| format!("{}", e))?,
+            file_type: data[60..=91].try_into().map_err(|e| format!("{}", e))?,
+            // file_type: data[60..=75].try_into().map_err(|e| format!("{}", e))?,
+            // blank_field1: data[76..=91].try_into().map_err(|e| format!("{}", e))?,
             header_checksum: data[92..=93].try_into().map_err(|e| format!("{}", e))?,
             blocksize: data[94..=95].try_into().map_err(|e| format!("{}", e))?,
             blank_field2: data[96..=97].try_into().map_err(|e| format!("{}", e))?,
@@ -85,11 +89,12 @@ impl std::convert::TryFrom<&[u8]> for ImgHeader {
 
 impl ImgHeader {
     pub fn filename(&self) -> Result<String, Error> {
-        String::from_utf8(remove_null_bytes(self.file_type)).map_err(Error::from)
+        String::from_utf8(remove_null_bytes(self.file_type.as_slice())).map_err(Error::from)
     }
 
     pub fn filename_lossy(&self) -> String {
-        String::from_utf8_lossy(remove_null_bytes(self.file_type).as_slice()).into_owned()
+        String::from_utf8_lossy(remove_null_bytes(self.file_type.as_slice()).as_slice())
+            .into_owned()
     }
 
     pub fn filesize(&self) -> u64 {

@@ -4,6 +4,7 @@ use super::ImgHeader;
 use tabled::{Table, Tabled};
 
 use crate::tabled_types::{ArrayValue, HexValue};
+use crate::utils::remove_null_bytes;
 
 #[derive(Tabled)]
 pub struct TableEntry {
@@ -23,8 +24,8 @@ pub struct TableEntry {
     file_time: ArrayValue,
     #[tabled(rename = "File name")]
     file_type: String,
-    #[tabled(rename = "Blank field (1)")]
-    blank_field1: ArrayValue,
+    // #[tabled(rename = "Blank field (1)")]
+    // blank_field1: ArrayValue,
     #[tabled(rename = "Header checksum")]
     header_checksum: HexValue,
     #[tabled(rename = "Block size (raw)")]
@@ -48,7 +49,7 @@ impl From<&ImgHeader> for TableEntry {
             file_date: ArrayValue::from(header.file_date.as_slice()),
             file_time: ArrayValue::from(header.file_time.as_slice()),
             file_type: header.filename_lossy(),
-            blank_field1: ArrayValue::from(header.blank_field1.as_slice()),
+            // blank_field1: ArrayValue::from(header.blank_field1.as_slice()),
             header_checksum: HexValue::from(header.header_checksum.as_slice()),
             blocksize_raw: ArrayValue::from(header.blocksize.as_slice()),
             blocksize: header.blocksize(),
