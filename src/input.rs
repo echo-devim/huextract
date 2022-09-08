@@ -80,8 +80,12 @@ impl Input {
             self.data.read_exact(&mut buf)?;
             match ImgHeader::try_from(buf.as_slice()) {
                 Ok(header) => {
-                    self.img_parts
-                        .push(Img::new(header.to_owned(), offset, padding));
+                    // computed padding belongs to the previous Img instance
+                    if let Some(mut previous) = self.img_parts.pop() {
+                        previous.padding = padding;
+                        self.img_parts.push(previous);
+                    }
+                    self.img_parts.push(Img::new(header.to_owned(), offset));
                     offset += header.offset();
                     padding = 0;
                 }
@@ -92,13 +96,10 @@ impl Input {
             }
             self.data.seek(SeekFrom::Start(offset))?;
         }
-        let mut remaining: i128 = (end - offset) as i128;
-        while remaining > 0 {
-            let mut byte = [0; 1];
-            self.data.read_exact(&mut byte)?;
-            offset += 1;
-            remaining -= 1;
-            self.data.seek(SeekFrom::Start(offset))?;
+        // compute padding for the last object
+        if let Some(mut last) = self.img_parts.pop() {
+            last.padding = end - (last.offset + last.header.filesize() + last.header.headersize());
+            self.img_parts.push(last);
         }
         Ok(())
     }
