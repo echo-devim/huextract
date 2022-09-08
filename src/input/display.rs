@@ -9,6 +9,8 @@ struct TableEntry {
     id: u16,
     #[tabled(rename = "File name")]
     filename: String,
+    #[tabled(rename = "Offset (bytes)")]
+    offset: u64,
     #[tabled(rename = "File size (bytes)")]
     filesize: u64,
     #[tabled(rename = "Header size (bytes)")]
@@ -17,10 +19,6 @@ struct TableEntry {
     paddingsize: u64,
     #[tabled(rename = "Total size (bytes)")]
     total: u64,
-    #[tabled(rename = "Offset (bytes)")]
-    offset: u64,
-    #[tabled(rename = "Total + offset (bytes)")]
-    sum: u64,
 }
 
 impl std::fmt::Display for Input {
@@ -36,7 +34,6 @@ impl std::fmt::Display for Input {
                 paddingsize: part.padding,
                 total: part.header.offset() + part.padding,
                 offset: part.offset,
-                sum: part.offset + part.header.offset() + part.padding,
             });
         }
         let table = Table::new(entries);
