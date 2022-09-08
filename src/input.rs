@@ -10,8 +10,10 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::io::{BufReader, SeekFrom};
 use std::path::Path;
+use std::thread;
 
 use crate::crc::Crc;
+use crate::extractor::ExtractOptions;
 use crate::img::Img;
 use crate::img_header;
 use crate::img_header::{ImgHeader, MIN_DATA_LEN, MIN_HEADER_LEN};
@@ -118,16 +120,16 @@ impl Input {
     }
 
     /// Extract the content of the img files to disk
-    pub fn extract_img(&mut self, no_checksum_verification: bool) -> Result<(), Error> {
+    pub fn extract_img(&mut self, options: ExtractOptions) -> Result<(), Error> {
+        let mut threads = Vec::new();
         for part in self.img_parts.clone() {
             let filename = format!("{}.img", part.header.filename()?);
             let offset = part.offset + part.header.headersize();
             let size = part.header.filesize() as usize;
-            print!("Extracting {filename}... ");
             self.write_to_disk(&filename, offset, size)?;
 
-            if no_checksum_verification {
-                println!("Done");
+            if options.no_checksum_verification {
+                println!("{filename} extracted.");
             } else {
                 // Verify file checksum
                 let mut checksum = Vec::new();
@@ -137,13 +139,31 @@ impl Input {
                     part.header.filechecksumsize(),
                 )?;
                 let mut img = BufReader::new(File::open(&filename)?);
-                if checksum
-                    == Crc::new(part.header.blocksize() as usize).compute_file_checksum(&mut img)?
-                {
-                    println!("Checksum OK");
+                let mut verify_checksum = {
+                    move || -> Result<(), Error> {
+                        if checksum
+                            == Crc::new(part.header.blocksize() as usize)
+                                .compute_file_checksum(&mut img)?
+                        {
+                            println!("{filename} extracted: checksum OK");
+                        } else {
+                            println!("{filename} extracted: checksum error");
+                        }
+                        Ok(())
+                    }
+                };
+                if options.multithreaded {
+                    let handle = thread::spawn(verify_checksum);
+                    threads.push(handle);
                 } else {
-                    println!("Checksum error");
+                    verify_checksum()?;
                 }
+            }
+        }
+        if options.multithreaded {
+            for thread in threads {
+                // Unwrapping here is for the abnormal thread termination
+                thread.join().unwrap()?;
             }
         }
         Ok(())
