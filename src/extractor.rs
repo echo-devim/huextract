@@ -98,7 +98,7 @@ impl Extractor {
                 ExtractorCommand::ExportHeadersCsv => println!("{}", input.export_csv()),
                 ExtractorCommand::Extract(options) => input.extract_img(options)?,
                 ExtractorCommand::ExtractChecksums => input.extract_checksum()?,
-                ExtractorCommand::ExtractHeaders => unimplemented!(),
+                ExtractorCommand::ExtractHeaders => input.extract_headers()?,
             }
 
             Ok(())

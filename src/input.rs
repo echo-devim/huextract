@@ -104,6 +104,18 @@ impl Input {
         Ok(())
     }
 
+    /// Extract the headers to the disk
+    pub fn extract_headers(&mut self) -> Result<(), Error> {
+        for part in self.img_parts.clone() {
+            let filename = format!("{}.hdr", part.header.filename()?);
+            let offset = part.offset;
+            let size = MIN_HEADER_LEN as usize;
+            self.write_to_disk(filename.as_str(), offset, size)?;
+            println!("{filename} extracted.");
+        }
+        Ok(())
+    }
+
     /// Extract the checksum file to the disk
     pub fn extract_checksum(&mut self) -> Result<(), Error> {
         for part in self.img_parts.clone() {
