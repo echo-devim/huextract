@@ -2,7 +2,9 @@
 //!
 //! Adapted from [https://github.com/JoeyJiao/split_updata.pl].
 //! According to further analysis, the file name is coded with 32 bytes, and not
-//! 16 bytes followed by 16 null bytes.
+//! 16 bytes followed by 16 null bytes (ERECOVERY_RAMDISK string need 17 bytes).
+//! Following the same logic, the blocksize field is probably 4 bytes long and
+//! not 2 bytes followed by 2 null bytes in a blank field.
 //!
 //! Each file starts with a magic number: 55AA 5AA5, followed by
 //! - 4 bytes for Header Length
@@ -14,8 +16,7 @@
 //! - 16 bytes for File Time
 //! - 32 bytes for File Type, containts the file name as utf-8
 //! - 2 bytes for Header Checksum (Sum & 0xFFFF? or some kind of CRC16?)
-//! - 2 bytes for BlockSize
-//! - 2 bytes for Blank2
+//! - 4 bytes for BlockSize
 //! - ($headerLength-98) bytes for file checksum
 //! - data file length bytes for files.
 //! - padding if necessary (so the total size of the chunk is a multiple of 4, i.e. 4-byte aligned)
@@ -37,8 +38,8 @@ pub struct ImgHeader {
     pub file_type: [u8; 32],
     //    pub blank_field1: [u8; 16],
     pub header_checksum: [u8; 2],
-    pub blocksize: [u8; 2],
-    pub blank_field2: [u8; 2],
+    pub blocksize: [u8; 4],
+    //    pub blank_field2: [u8; 2],
     pub file_checksum_size: u32, // ($header_len - 98) should fit in u32 as header_len is u32
 }
 
@@ -71,8 +72,9 @@ impl std::convert::TryFrom<&[u8]> for ImgHeader {
             // file_type: data[60..=75].try_into().map_err(|e| format!("{}", e))?,
             // blank_field1: data[76..=91].try_into().map_err(|e| format!("{}", e))?,
             header_checksum: data[92..=93].try_into().map_err(|e| format!("{}", e))?,
-            blocksize: data[94..=95].try_into().map_err(|e| format!("{}", e))?,
-            blank_field2: data[96..=97].try_into().map_err(|e| format!("{}", e))?,
+            blocksize: data[94..=97].try_into().map_err(|e| format!("{}", e))?,
+            // blocksize: data[94..=95].try_into().map_err(|e| format!("{}", e))?,
+            // blank_field2: data[96..=97].try_into().map_err(|e| format!("{}", e))?,
             ..Self::default()
         };
         let header_len = u32::from_le_bytes(img.header_len);
@@ -114,7 +116,7 @@ impl ImgHeader {
 
     /// Returns the blocksize
     pub fn blocksize(&self) -> u64 {
-        u16::from_le_bytes(self.blocksize) as u64
+        u32::from_le_bytes(self.blocksize) as u64
     }
 
     /// Returns the size of the file checksum field

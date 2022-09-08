@@ -32,8 +32,8 @@ pub struct TableEntry {
     blocksize_raw: ArrayValue,
     #[tabled(rename = "Block size (bytes)")]
     blocksize: u64,
-    #[tabled(rename = "Blank field (2)")]
-    blank_field2: ArrayValue,
+    // #[tabled(rename = "Blank field (2)")]
+    // blank_field2: ArrayValue,
     #[tabled(rename = "File checksum size (bytes)")]
     file_checksum_size: u32,
 }
@@ -53,7 +53,7 @@ impl From<&ImgHeader> for TableEntry {
             header_checksum: HexValue::from(header.header_checksum.as_slice()),
             blocksize_raw: ArrayValue::from(header.blocksize.as_slice()),
             blocksize: header.blocksize(),
-            blank_field2: ArrayValue::from(header.blank_field2.as_slice()),
+            //            blank_field2: ArrayValue::from(header.blank_field2.as_slice()),
             file_checksum_size: header.file_checksum_size,
         }
     }
@@ -91,9 +91,9 @@ pub struct CsvEntry {
     #[tabled(rename = "Header checksum")]
     header_checksum: u16,
     #[tabled(rename = "Block size (bytes)")]
-    blocksize: u16,
-    #[tabled(rename = "Blank field (2)")]
-    blank_field2: u16,
+    blocksize: u32,
+    //#[tabled(rename = "Blank field (2)")]
+    //blank_field2: u16,
     #[tabled(rename = "File checksum size (bytes)")]
     file_checksum_size: u32,
 }
@@ -113,8 +113,8 @@ impl From<&ImgHeader> for CsvEntry {
             file_type: header.filename_lossy(),
             // blank_field1: u128::from_le_bytes(header.blank_field1),
             header_checksum: u16::from_le_bytes(header.header_checksum),
-            blocksize: u16::from_le_bytes(header.blocksize),
-            blank_field2: u16::from_le_bytes(header.blank_field2),
+            blocksize: u32::from_le_bytes(header.blocksize),
+            // blank_field2: u16::from_le_bytes(header.blank_field2),
             file_checksum_size: header.file_checksum_size,
         }
     }
