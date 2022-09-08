@@ -11,11 +11,11 @@ pub struct Img {
 }
 
 impl Img {
-    pub fn new(header: ImgHeader, offset: u64, padding: u64) -> Self {
+    pub fn new(header: ImgHeader, offset: u64) -> Self {
         Self {
             header,
             offset,
-            padding,
+            padding: 0,
         }
     }
 }
