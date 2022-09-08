@@ -36,10 +36,8 @@ pub struct ImgHeader {
     pub file_date: [u8; 16],
     pub file_time: [u8; 16],
     pub file_type: [u8; 32],
-    //    pub blank_field1: [u8; 16],
     pub header_checksum: [u8; 2],
     pub blocksize: [u8; 4],
-    //    pub blank_field2: [u8; 2],
     pub file_checksum_size: u32, // ($header_len - 98) should fit in u32 as header_len is u32
 }
 
@@ -69,12 +67,8 @@ impl std::convert::TryFrom<&[u8]> for ImgHeader {
             file_date: data[28..=43].try_into().map_err(|e| format!("{}", e))?,
             file_time: data[44..=59].try_into().map_err(|e| format!("{}", e))?,
             file_type: data[60..=91].try_into().map_err(|e| format!("{}", e))?,
-            // file_type: data[60..=75].try_into().map_err(|e| format!("{}", e))?,
-            // blank_field1: data[76..=91].try_into().map_err(|e| format!("{}", e))?,
             header_checksum: data[92..=93].try_into().map_err(|e| format!("{}", e))?,
             blocksize: data[94..=97].try_into().map_err(|e| format!("{}", e))?,
-            // blocksize: data[94..=95].try_into().map_err(|e| format!("{}", e))?,
-            // blank_field2: data[96..=97].try_into().map_err(|e| format!("{}", e))?,
             ..Self::default()
         };
         let header_len = u32::from_le_bytes(img.header_len);
@@ -124,58 +118,6 @@ impl ImgHeader {
         self.file_checksum_size as usize
     }
 }
-
-//impl std::fmt::Display for ImgHeader {
-//    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//        let total_size = self.filesize() + self.headersize();
-//
-//            f,
-//            "\
-// - header_len: {:x?}
-// - unknown_field: {:x?}
-// - hardware_id: {:x?}
-// - file_sequence: {:x?}
-// - file_size: {:x?}
-// - file_date: {:x?}
-// - file_time: {:x?}
-// - file_type: {:x?}
-// - blank_field1: {:x?}
-// - header_checksum: {:x?}
-// - blocksize: {:x?}
-// - blank_field2: {:x?}
-// - file_checksum_size: {}
-// => filename: {},
-// => file size: {} bytes
-// => total header len: {} bytes
-// => file checksum len: {} bytes
-// => total len: {} bytes
-// => calculated offset: {} bytes,
-// => blocksize: {} bytes
-// => total/bs: {}",
-//            self.header_len,
-//            self.unknown_field,
-//            self.hardware_id,
-//            self.file_sequence,
-//            self.file_size,
-//            self.file_date,
-//            self.file_time,
-//            self.file_type,
-//            self.blank_field1,
-//            self.header_checksum,
-//            self.blocksize,
-//            self.blank_field2,
-//            self.file_checksum_size,
-//            self.filename_lossy(),
-//            self.filesize(),
-//            self.headersize(),
-//            self.file_checksum_size,
-//            total_size,
-//            self.offset(),
-//            self.blocksize(),
-//            total_size as f64 / self.blocksize() as f64
-//        )
-//    }
-//}
 
 #[cfg(test)]
 mod tests {

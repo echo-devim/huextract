@@ -30,10 +30,6 @@ pub struct Input {
     pub size: u64,
     /// File name we got the data from
     filename: String,
-    // /// File containing the input data
-    // file: File,
-    // /// Pointer to the data
-    // data: &'a [u8],
 }
 
 impl std::convert::TryFrom<&Path> for Input {

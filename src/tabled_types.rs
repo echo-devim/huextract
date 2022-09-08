@@ -1,8 +1,6 @@
 //! This module defines some glue types for custom display
 
 /// Print hexadecimal format
-// pub struct HexValue(HexValueType);
-
 pub enum HexValue {
     U8(u8),
     U16(u16),
@@ -10,12 +8,6 @@ pub enum HexValue {
     U64(u64),
     U128(u128),
 }
-
-// impl std::fmt::Display for HexValue {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         write!(f, "{}", self.0)
-//     }
-// }
 
 impl std::fmt::Display for HexValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

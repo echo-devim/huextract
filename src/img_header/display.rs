@@ -24,16 +24,12 @@ pub struct TableEntry {
     file_time: ArrayValue,
     #[tabled(rename = "File name")]
     file_type: String,
-    // #[tabled(rename = "Blank field (1)")]
-    // blank_field1: ArrayValue,
     #[tabled(rename = "Header checksum")]
     header_checksum: HexValue,
     #[tabled(rename = "Block size (raw)")]
     blocksize_raw: ArrayValue,
     #[tabled(rename = "Block size (bytes)")]
     blocksize: u64,
-    // #[tabled(rename = "Blank field (2)")]
-    // blank_field2: ArrayValue,
     #[tabled(rename = "File checksum size (bytes)")]
     file_checksum_size: u32,
 }
@@ -49,11 +45,9 @@ impl From<&ImgHeader> for TableEntry {
             file_date: ArrayValue::from(header.file_date.as_slice()),
             file_time: ArrayValue::from(header.file_time.as_slice()),
             file_type: header.filename_lossy(),
-            // blank_field1: ArrayValue::from(header.blank_field1.as_slice()),
             header_checksum: HexValue::from(header.header_checksum.as_slice()),
             blocksize_raw: ArrayValue::from(header.blocksize.as_slice()),
             blocksize: header.blocksize(),
-            //            blank_field2: ArrayValue::from(header.blank_field2.as_slice()),
             file_checksum_size: header.file_checksum_size,
         }
     }
@@ -86,14 +80,10 @@ pub struct CsvEntry {
     file_time: String,
     #[tabled(rename = "File name")]
     file_type: String,
-    // #[tabled(rename = "Blank field (1)")]
-    // blank_field1: u128,
     #[tabled(rename = "Header checksum")]
     header_checksum: u16,
     #[tabled(rename = "Block size (bytes)")]
     blocksize: u32,
-    //#[tabled(rename = "Blank field (2)")]
-    //blank_field2: u16,
     #[tabled(rename = "File checksum size (bytes)")]
     file_checksum_size: u32,
 }
@@ -111,10 +101,8 @@ impl From<&ImgHeader> for CsvEntry {
             file_time: String::from_utf8_lossy(&remove_null_bytes(header.file_time.as_slice()))
                 .to_string(),
             file_type: header.filename_lossy(),
-            // blank_field1: u128::from_le_bytes(header.blank_field1),
             header_checksum: u16::from_le_bytes(header.header_checksum),
             blocksize: u32::from_le_bytes(header.blocksize),
-            // blank_field2: u16::from_le_bytes(header.blank_field2),
             file_checksum_size: header.file_checksum_size,
         }
     }
