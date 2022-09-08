@@ -15,6 +15,7 @@ mod utils;
 fn main() -> ExitCode {
     let extractor = Extractor::parse();
     if let Err(e) = extractor.run() {
+        // add extra line to improve readability
         println!("{e}\n");
         // print help message on error, this shouldn't fail
         Extractor::command().print_long_help().unwrap();
