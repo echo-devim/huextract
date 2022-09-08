@@ -46,7 +46,7 @@ pub struct Extractor {
 #[derive(Subcommand)]
 enum ExtractorCommand {
     /// Extract the img files contained in the input file.
-    Extract(Extract),
+    Extract(ExtractOptions),
     /// List the img files contained in the input file.
     List,
     /// Extract the raw content of the headers into files.
@@ -61,15 +61,18 @@ enum ExtractorCommand {
 
 impl Default for ExtractorCommand {
     fn default() -> Self {
-        ExtractorCommand::Extract(Extract::default())
+        ExtractorCommand::Extract(ExtractOptions::default())
     }
 }
 
 #[derive(Args, Default)]
-struct Extract {
+pub struct ExtractOptions {
     /// Don't verify checksum for extracted files.
     #[clap(short, long)]
-    no_checksum_verification: bool,
+    pub no_checksum_verification: bool,
+    /// Multithreaded checksum verification.
+    #[clap(short, long)]
+    pub multithreaded: bool,
 }
 
 impl Extractor {
@@ -93,9 +96,7 @@ impl Extractor {
                 ExtractorCommand::List => println!("{input}"),
                 ExtractorCommand::ShowHeaders => println!("{}", input.full_table()),
                 ExtractorCommand::ExportHeadersCsv => println!("{}", input.export_csv()),
-                ExtractorCommand::Extract(options) => {
-                    input.extract_img(options.no_checksum_verification)?
-                }
+                ExtractorCommand::Extract(options) => input.extract_img(options)?,
                 ExtractorCommand::ExtractChecksums => input.extract_checksum()?,
                 ExtractorCommand::ExtractHeaders => unimplemented!(),
             }
