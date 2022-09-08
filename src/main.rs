@@ -2,7 +2,6 @@ use std::process::ExitCode;
 
 use clap::{CommandFactory, Parser};
 use extractor::Extractor;
-use local_error::Error;
 
 mod crc;
 mod extractor;

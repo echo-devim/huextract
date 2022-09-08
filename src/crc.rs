@@ -81,7 +81,7 @@ impl Crc {
         result.to_le_bytes().to_vec()
     }
 
-    pub fn compute_checksum(&mut self, data: &[u8]) -> Vec<u8> {
+    pub fn _compute_checksum(&mut self, data: &[u8]) -> Vec<u8> {
         let mut checksum = Vec::new();
         let size = data.len();
         let mut offset = 0;
