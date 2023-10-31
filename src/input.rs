@@ -126,8 +126,10 @@ impl Input {
     /// Extract the content of the img files to disk
     pub fn extract_img(&mut self, options: ExtractOptions) -> Result<(), Error> {
         let mut threads = Vec::new();
+        let mut file_index = 0;
         for part in self.img_parts.clone() {
-            let filename = format!("{}.img", part.header.filename()?);
+            file_index += 1;
+            let filename = format!("{}_{}.img", part.header.filename()?, file_index.to_string());
             let offset = part.offset + part.header.headersize();
             let size = part.header.filesize() as usize;
             self.write_to_disk(&filename, offset, size)?;
