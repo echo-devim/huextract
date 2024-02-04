@@ -14,7 +14,7 @@ Features
 
 Installation
 ------------
-```$ git install --git https://github.com/echo-devim/huextract huextract```
+```$ cargo install --git https://github.com/echo-devim/huextract huextract```
 
 Usage
 -----
